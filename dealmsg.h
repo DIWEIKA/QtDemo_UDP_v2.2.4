@@ -32,6 +32,7 @@ public:
     shared_ptr<CirQueue<float>> CHdata; //存放Channel数据的容器
     shared_ptr<CirQueue<unsigned char>> CHdata2; //测试
     Ui::MainWindow *UI;
+     qint64 LenoUDP = 2000*60000;
 
 protected:
         //QThread的虚函数
@@ -40,8 +41,8 @@ protected:
          void run();
 
 signals:
-    //signal 线程执行完发送
-    void isDone();
+    //线程执行完发送
+//    void finished();
 };
 
 #endif // DEALMSG_H

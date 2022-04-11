@@ -4,21 +4,9 @@ WriteToFiles::WriteToFiles(DealMsg* dealmsg)
 {
     dealMsg = dealmsg;
 
-    //Counting 60s
-    udpTimer = new QTimer(); //计时1分钟
-    udpTimer->setTimerType(Qt::PreciseTimer);//设置定时器对象精确度模式，分辨率为1ms
-    isTimeUpdate = false;
-    udpTimer->start(60000);
 }
 
 void WriteToFiles::run()
-{
-    //Every 60s emit a timeout()
-    connect(udpTimer,&QTimer::timeout,this,&WriteToFiles::TimeUpdate);
-
-}
-
-void WriteToFiles::TimeUpdate()
 {
     qDebug() << "TimeUpdate" << endl;
 
@@ -30,6 +18,9 @@ void WriteToFiles::TimeUpdate()
 
      //close ofstream
     this->closeStream();
+
+//    emit finished();
+    qDebug()<< "WriteToFiles Thread is Finished ! "<<endl;
 }
 
 void WriteToFiles::changeFileNameOnce()
@@ -61,7 +52,9 @@ void WriteToFiles ::WriteToFilesWith3Channels()
     if (!outfile1.is_open() || !outfile2.is_open() || !outfile3.is_open()) return;
 
     //按先后顺序将CH1、CH2、CH3的数据分开存储
-    for(unsigned int i=0; i<dealMsg->CHdata2->size()/3; ++i)
+    unsigned int sizeoCHdata2 = dealMsg->CHdata2->size();
+
+    for(unsigned int i=0; i<sizeoCHdata2/3; ++i)
     {
         outfile1.write((const char*)dealMsg->CHdata2->begin(),sizeof (unsigned char));
         dealMsg->CHdata2->pop();

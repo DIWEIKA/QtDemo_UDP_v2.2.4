@@ -36,12 +36,16 @@ public:
     DealMsg* dealMsg;
     WriteToFiles* writeToFiles;
     bool isStopSend;
+    void OpenDealMsgThread();
+    void OpenWriteToFilesThread();
 
     void stopThread();
 
 private slots:
     void on_pushButton_Send_clicked();
     void on_pushButton_Stop_clicked();
+    void FinishDealMsgThread();
+    void FinishWriteToFilesThread();
 
 
 private:

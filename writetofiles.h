@@ -44,8 +44,8 @@ protected:
     void run();
 
 signals:
-    //signal 线程执行完发送
-    void isDone();
+    //线程执行完发送
+//    void finished();
 };
 
 #endif // WRITETOFILES_H

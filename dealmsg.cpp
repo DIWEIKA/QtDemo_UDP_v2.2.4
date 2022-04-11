@@ -5,22 +5,18 @@ DealMsg::DealMsg(QUdpSocket *socket , Ui::MainWindow *ui)
     udpSocket = socket;
 
     UI = ui;
+
+    //CHdata初始化
+     CHdata2 = make_shared<CirQueue<unsigned char>>(LenoUDP);
 }
 
 void DealMsg::run()
 {
-    //Every Source send a packet , emit readyRead() once
-    connect(udpSocket, &QUdpSocket::readyRead, this, &DealMsg::execute);
-
-}
-
-void DealMsg:: execute()
-{
     while(udpSocket->hasPendingDatagrams()){
         //发送的UDP数据包的大小
-        qDebug()<<"pending UDP datagram size = "<< udpSocket->pendingDatagramSize();
+        qDebug()<<"pending UDP datagram size = "<< udpSocket->pendingDatagramSize()<<endl;
 
-         UI->textEdit_Msg->insertPlainText("Pending...");
+//         UI->textEdit_Msg->insertPlainText("Pending...");
 
         //datagram << UDP
        readDatagram();
@@ -42,10 +38,16 @@ void DealMsg:: execute()
        getDatafromByteToFloat();
 
     }
+
+//    emit finished();
+
+     qDebug()<<"DealMsg Thread is Finished ! "<<endl;
 }
 
 void DealMsg::readDatagram()
 {
+     qDebug()<<"readDatagram ... "<<endl;
+
         //clear datagram
         datagram.clear();
 
@@ -58,13 +60,15 @@ void DealMsg::readDatagram()
 
 void DealMsg::getDatafromByteToFloat()
 {
+     qDebug()<<"getDatafromByteToFloat ... "<<endl;
+
     for(int i=0; i<lenoDatagram; i++)
      {
        unsigned char usCHDATA =(*RECORD_BUF)[i];
 
 //       qDebug()<<"usCHDATA= "<<usCHDATA<<endl;
 
-        CHdata->push(float(usCHDATA));
+//        CHdata->push(float(usCHDATA));
 
         //测试
         CHdata2->push(usCHDATA);

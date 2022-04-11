@@ -14,9 +14,9 @@ MainWindow::MainWindow(QWidget *parent)
     //bind port
     udpSocket->bind(8000);
 
-       //获取本机的计算机名
+     //获取本机的计算机名
     QString localHostName = QHostInfo:: localHostName();
-    qDebug() <<"localHostName: "<<localHostName;
+    qDebug() <<"localHostName: "<<localHostName<<endl;
 
     ui->textEdit_Msg->insertPlainText("localHostName: "+localHostName+'\n');
 
@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent)
     QHostInfo info = QHostInfo::fromName(localHostName);
     QList<QHostAddress> strIpAddress  = info.addresses();
     QHostAddress IpAddress =  strIpAddress.back();
-    qDebug() << "IpAddress: " << IpAddress;
+    qDebug() << "IpAddress: " << IpAddress<<endl;
 
     ui->textEdit_Msg->insertPlainText("IpAddress: "+IpAddress.toString()+'\n');
 
@@ -32,17 +32,30 @@ MainWindow::MainWindow(QWidget *parent)
     QString title = QString("Server IP: %1, Port: 8000").arg(IpAddress.toString());
     setWindowTitle(title);
 
+    //Counting 60s
+    udpTimer = new QTimer(); //计时1分钟
+    udpTimer->setTimerType(Qt::PreciseTimer);//设置定时器对象精确度模式，分辨率为1ms
+    isTimeUpdate = false;
+    udpTimer->start(60000);
+
     //new DealMsg Thread
     dealMsg  = new DealMsg(udpSocket,ui);
-
-    //start Thread
-    dealMsg->start();
 
     //new WriteToFiles Thread
     writeToFiles = new WriteToFiles(dealMsg);
 
-    //start Thread
-    writeToFiles->start();
+    //Every Source send a packet, connect OpenDealMsgThread
+    //readyRead<->dealMsg
+    connect(udpSocket, &QUdpSocket::readyRead, this, &MainWindow::OpenDealMsgThread);
+
+    //Every time dealMsg is finished, connect dealMsgFinshedSlot()
+    connect(dealMsg,&QThread::finished,this,&MainWindow::FinishDealMsgThread);
+
+    //Every 60s emit a timeout(), connect OpenWriteToFilesThread
+    connect(udpTimer,&QTimer::timeout,this,&MainWindow::OpenWriteToFilesThread);
+
+    //Every time dealMsg is finished, connect dealMsgFinshedSlot()
+    connect(writeToFiles,&QThread::finished,this,&MainWindow::FinishWriteToFilesThread);
 
  }
 
@@ -51,33 +64,45 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::OpenDealMsgThread()
+{
+    //If dealMsg is Running, wait until it finished
+    if(dealMsg->isRunning())
+        dealMsg->wait();
+
+    //dealMsg->run()
+    dealMsg->start();
+
+    ui->textEdit_Msg->insertPlainText("Pending...");
+}
+
+void MainWindow::FinishDealMsgThread()
+{
+    //quit Thread
+    dealMsg->quit();
+
+}
+
+void MainWindow::OpenWriteToFilesThread()
+{
+    //If dealMsg is Running, wait until it finished
+    if(writeToFiles->isRunning())
+        writeToFiles->wait();
+
+    //writeToFiles->run()
+    writeToFiles->start();
+}
+
+void MainWindow::FinishWriteToFilesThread()
+{
+    //quit Thread
+    writeToFiles->quit();
+
+}
+
 void MainWindow::on_pushButton_Send_clicked()
 {
-    qDebug()<<" pushButton_Send_clicked "<<endl;
 
-    ui->textEdit_Msg->insertPlainText("pushButton_Send_clicked"+'\n');
-
-    //New Senddata Object
-    senddata = new Senddata(udpSocket, ui);
-
-    //ifStream >> sendData
-    senddata->ReadFromFiles();
-
-    //sendData >> msgbuf
-    senddata->getConfig();
-
-    isStopSend = false;
-
-    while(1)
-    {
-        //msgbuf >> UDP
-        senddata->writeDatagram();
-
-        qDebug()<<"sending data ... "<<endl;
-
-        //delay 1ms
-        Sleep(1);
-    }
 }
 
 void MainWindow::on_pushButton_Stop_clicked()
@@ -88,12 +113,7 @@ void MainWindow::on_pushButton_Stop_clicked()
 
 void MainWindow::stopThread()
 {
-    //quit Thread
-    dealMsg->quit();
-    writeToFiles->quit();
 
-    //waiting until Thread is over
-    dealMsg->wait();
-    writeToFiles->wait();
+
 }
 
