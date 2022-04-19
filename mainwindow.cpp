@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
     QList<QHostAddress> strIpAddress  = info.addresses();
     QHostAddress IpAddress =  strIpAddress.back();
     qDebug() << "IpAddress: " << IpAddress<<endl;
+    qDebug()<<"--------------------------"<<endl;
 
     ui->textEdit_Msg->insertPlainText("IpAddress: "+IpAddress.toString()+'\n');
 
@@ -39,13 +40,14 @@ MainWindow::MainWindow(QWidget *parent)
     udpTimer->start(60000);
 
     //new DealMsg Thread
-    dealMsg  = new DealMsg(udpSocket,ui);
+    dealMsg  = new DealMsg(udpSocket);
+
+
 
     //new WriteToFiles Thread
     writeToFiles = new WriteToFiles(dealMsg);
 
     //Every Source send a packet, connect OpenDealMsgThread
-    //readyRead<->dealMsg
     connect(udpSocket, &QUdpSocket::readyRead, this, &MainWindow::OpenDealMsgThread);
 
     //Every time dealMsg is finished, connect dealMsgFinshedSlot()
@@ -66,11 +68,13 @@ MainWindow::~MainWindow()
 
 void MainWindow::OpenDealMsgThread()
 {
-    //If dealMsg is Running, wait until it finished
-    if(dealMsg->isRunning())
-        dealMsg->wait();
+    dealMsg->readFlag = 1;
 
-    //dealMsg->run()
+    //If dealMsg is Running, wait until it finished
+       if(dealMsg->isRunning())
+           dealMsg->wait();
+
+    //run DealMsg Thread
     dealMsg->start();
 
     ui->textEdit_Msg->insertPlainText("Pending...");
@@ -80,6 +84,8 @@ void MainWindow::FinishDealMsgThread()
 {
     //quit Thread
     dealMsg->quit();
+
+    dealMsg->wait();
 
 }
 

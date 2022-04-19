@@ -10,21 +10,6 @@ void WriteToFiles::run()
 {
     qDebug() << "TimeUpdate" << endl;
 
-    //build new files
-    this->changeFileNameOnce();
-
-    //ofstream << CHData
-     this->WriteToFilesWith3Channels();
-
-     //close ofstream
-    this->closeStream();
-
-//    emit finished();
-    qDebug()<< "WriteToFiles Thread is Finished ! "<<endl;
-}
-
-void WriteToFiles::changeFileNameOnce()
-{
     //更新当前时间
     dateTime = QDateTime::currentDateTime();
 
@@ -39,10 +24,6 @@ void WriteToFiles::changeFileNameOnce()
 //    saveFilenameAll = QString(saveFolder.c_str())+QString("/[ALL][")+QString::number(PeakNum)
 //            +QString("]")+dateTime.toString("yyyyMMddhhmmss")+ QString(".bin");
 
-}
-
-void WriteToFiles ::WriteToFilesWith3Channels()
-{
     //打开文件
    outfile1.open(saveFilename1.toStdString().data(),ofstream::binary);
    outfile2.open(saveFilename2.toStdString().data(),ofstream::binary);
@@ -70,12 +51,28 @@ void WriteToFiles ::WriteToFilesWith3Channels()
     qDebug()<<"ofstream writing over ! "<<endl;
 
     qDebug()<<"CHdata have been cleared ! "<<endl;
+
+    //close stream
+    outfile1.close();
+    outfile2.close();
+    outfile3.close();
+
+    qDebug()<< "WriteToFiles Thread is Finished ! "<<endl;
+    qDebug()<<"-----------------------------------"<<endl;
+}
+
+void WriteToFiles::changeFileNameOnce()
+{
+
+
+}
+
+void WriteToFiles ::WriteToFilesWith3Channels()
+{
+
 }
 
 void WriteToFiles::closeStream()
 {
-    //关闭输出流
-    outfile1.close();
-    outfile2.close();
-    outfile3.close();
+
 }

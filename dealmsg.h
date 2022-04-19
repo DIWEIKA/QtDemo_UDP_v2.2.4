@@ -15,12 +15,13 @@ class  WriteToFiles;
 class DealMsg : public QThread
 {
 public:
-    DealMsg(QUdpSocket *socket, Ui::MainWindow *ui);
+    DealMsg(QUdpSocket *socket);
 
 
     void readDatagram();
     void getDatafromByteToFloat();
     void execute();
+    void OpenDealMsgThread();
 
     QUdpSocket *udpSocket;
     BYTE* bufPtr;
@@ -31,8 +32,8 @@ public:
     quint16 clientPort; //客户端port
     shared_ptr<CirQueue<float>> CHdata; //存放Channel数据的容器
     shared_ptr<CirQueue<unsigned char>> CHdata2; //测试
-    Ui::MainWindow *UI;
      qint64 LenoUDP = 2000*60000;
+     bool readFlag;  //if has received readyRead signal
 
 protected:
         //QThread的虚函数
