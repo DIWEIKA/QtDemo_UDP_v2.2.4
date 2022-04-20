@@ -16,11 +16,6 @@ class WriteToFiles : public QThread
 public:
     WriteToFiles(DealMsg* dealmsg);
 
-    void TimeUpdate();
-    void changeFileNameOnce();
-    void WriteToFilesWith3Channels();
-    void closeStream();
-
     QTimer* udpTimer;
     DealMsg* dealMsg;
     bool isTimeUpdate;
@@ -44,8 +39,7 @@ protected:
     void run();
 
 signals:
-    //线程执行完发送
-//    void finished();
+
 };
 
 #endif // WRITETOFILES_H

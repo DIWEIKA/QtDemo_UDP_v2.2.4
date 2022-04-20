@@ -14,35 +14,17 @@ MainWindow::MainWindow(QWidget *parent)
     //bind port
     udpSocket->bind(8000);
 
-     //获取本机的计算机名
-    QString localHostName = QHostInfo:: localHostName();
-    qDebug() <<"localHostName: "<<localHostName<<endl;
-
-    ui->textEdit_Msg->insertPlainText("localHostName: "+localHostName+'\n');
-
-    //获取本机IP
-    QHostInfo info = QHostInfo::fromName(localHostName);
-    QList<QHostAddress> strIpAddress  = info.addresses();
-    QHostAddress IpAddress =  strIpAddress.back();
-    qDebug() << "IpAddress: " << IpAddress<<endl;
-    qDebug()<<"--------------------------"<<endl;
-
-    ui->textEdit_Msg->insertPlainText("IpAddress: "+IpAddress.toString()+'\n');
-
-    //设置窗口的标题
-    QString title = QString("Server IP: %1, Port: 8000").arg(IpAddress.toString());
-    setWindowTitle(title);
+    //set Local Message
+    setLocalMsg();
 
     //Counting 60s
-    udpTimer = new QTimer(); //计时1分钟
+    udpTimer = new QTimer();
     udpTimer->setTimerType(Qt::PreciseTimer);//设置定时器对象精确度模式，分辨率为1ms
     isTimeUpdate = false;
     udpTimer->start(60000);
 
     //new DealMsg Thread
     dealMsg  = new DealMsg(udpSocket);
-
-
 
     //new WriteToFiles Thread
     writeToFiles = new WriteToFiles(dealMsg);
@@ -66,9 +48,31 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::setLocalMsg()
+{
+    //获取本机的计算机名
+   QString localHostName = QHostInfo:: localHostName();
+   qDebug() <<"localHostName: "<<localHostName<<endl;
+
+   ui->textEdit_Msg->insertPlainText("localHostName: "+localHostName+'\n');
+
+   //获取本机IP
+   QHostInfo info = QHostInfo::fromName(localHostName);
+   QList<QHostAddress> strIpAddress  = info.addresses();
+   QHostAddress IpAddress =  strIpAddress.back();
+   qDebug() << "IpAddress: " << IpAddress<<endl;
+   qDebug()<<"--------------------------"<<endl;
+
+   ui->textEdit_Msg->insertPlainText("IpAddress: "+IpAddress.toString()+'\n');
+
+   //设置窗口的标题
+   QString title = QString("Server IP: %1, Port: 8000").arg(IpAddress.toString());
+   setWindowTitle(title);
+}
+
 void MainWindow::OpenDealMsgThread()
 {
-    dealMsg->readFlag = 1;
+    dealMsg->setFlag();
 
     //If dealMsg is Running, wait until it finished
        if(dealMsg->isRunning())
@@ -91,11 +95,10 @@ void MainWindow::FinishDealMsgThread()
 
 void MainWindow::OpenWriteToFilesThread()
 {
-    //If dealMsg is Running, wait until it finished
-    if(writeToFiles->isRunning())
-        writeToFiles->wait();
+//    //first quit dealMsg Thread
+//    dealMsg->resetFlag();
 
-    //writeToFiles->run()
+    //then writeToFiles->run()
     writeToFiles->start();
 }
 
@@ -103,6 +106,8 @@ void MainWindow::FinishWriteToFilesThread()
 {
     //quit Thread
     writeToFiles->quit();
+
+    writeToFiles->wait();
 
 }
 

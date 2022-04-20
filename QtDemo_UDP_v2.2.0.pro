@@ -12,14 +12,12 @@ SOURCES += \
     dealmsg.cpp \
     main.cpp \
     mainwindow.cpp \
-    senddata.cpp \
     writetofiles.cpp
 
 HEADERS += \
     CirQueue.h \
     dealmsg.h \
     mainwindow.h \
-    senddata.h \
     writetofiles.h
 
 FORMS += \

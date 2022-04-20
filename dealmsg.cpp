@@ -4,75 +4,73 @@ DealMsg::DealMsg(QUdpSocket *socket)
 {
     udpSocket = socket;
 
-    //CHdata初始化
-     CHdata2 = make_shared<CirQueue<unsigned char>>(LenoUDP);
+    CHdata2 = make_shared<CirQueue<unsigned char>>(LenoUDP);
+}
 
-     readFlag = 0;
+void DealMsg::setFlag()
+{
+    isDone = false;
+}
+
+void DealMsg::resetFlag()
+{
+    isDone = true;
 }
 
 void DealMsg::run()
 {
-    while(udpSocket->hasPendingDatagrams()){
+    while(true){
 
-        //发送的UDP数据包的大小
-        qDebug()<<"pending UDP datagram size = "<< udpSocket->pendingDatagramSize()<<endl;
+        if(isDone)
+            break;
 
-         qDebug()<<"readDatagram ... "<<endl;
+        else {
 
-         //clear datagram
-         datagram.clear();
+            while(udpSocket->hasPendingDatagrams()){
 
-         //datagram init
-         datagram.resize(udpSocket->pendingDatagramSize());
+                qDebug()<<"pending UDP datagram size = "<< udpSocket->pendingDatagramSize()<<endl;
 
-         //读取对方发送的内容，并存入datagram
-         lenoDatagram = udpSocket->readDatagram(datagram.data(),datagram.size(),&clientAddr,&clientPort);
+                qDebug()<<"readDatagram ... "<<endl;
 
-       //release bufPtr
-        delete bufPtr;
-        bufPtr = NULL;
+                //clear datagram
+                datagram.clear();
 
-       //define a new BYTE[]
-       bufPtr = new BYTE[lenoDatagram]();
+                //datagram init
+                datagram.resize(udpSocket->pendingDatagramSize());
 
-        //define a new RECORD_BUF
-       RECORD_BUF = make_shared<BYTE*>(bufPtr);
+                //读取对方发送的内容，并存入datagram
+                lenoDatagram = udpSocket->readDatagram(datagram.data(),datagram.size(),&clientAddr,&clientPort);
 
-       //RECORD_BUF << datagram
-       memcpy(*RECORD_BUF,datagram.data(),lenoDatagram);
+               //release bufPtr
+                delete bufPtr;
+                bufPtr = NULL;
 
-       //CHData << RECORD_BUF
-       qDebug()<<"getDatafromByteToFloat ... "<<endl;
+               //define a new BYTE[]
+               bufPtr = new BYTE[lenoDatagram]();
 
-      for(int i=0; i<lenoDatagram; i++)
-       {
-         unsigned char usCHDATA =(*RECORD_BUF)[i];
+                //define a new RECORD_BUF
+               RECORD_BUF = make_shared<BYTE*>(bufPtr);
 
-          //测试
-          CHdata2->push(usCHDATA);
+               //RECORD_BUF << datagram
+               memcpy(*RECORD_BUF,datagram.data(),lenoDatagram);
 
-      }
-       readFlag = 0;
-     }
+               //CHData << RECORD_BUF
+               qDebug()<<"CHData << RECORD_BUF "<<endl;
+
+               for(int i=0; i<lenoDatagram; i++) {
+                 unsigned char usCHDATA =(*RECORD_BUF)[i];
+
+                  //测试
+                  CHdata2->push(usCHDATA);
+               }
+             }
+
+            resetFlag();
+        }
+    }
 
     qDebug()<<"DealMsg Thread is Finished ! "<<endl;
     qDebug()<<"-----------------------------------"<<endl;
 
-    // loop the Thread
-//     this->exec();
-}
-
-void DealMsg::OpenDealMsgThread()
-{
-
-}
-
-void DealMsg::readDatagram()
-{
-
-}
-
-void DealMsg::getDatafromByteToFloat()
-{
-
+//    exec();
 }

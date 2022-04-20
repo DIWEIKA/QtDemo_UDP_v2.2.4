@@ -17,11 +17,8 @@ class DealMsg : public QThread
 public:
     DealMsg(QUdpSocket *socket);
 
-
-    void readDatagram();
-    void getDatafromByteToFloat();
-    void execute();
-    void OpenDealMsgThread();
+    void setFlag();
+    void resetFlag();
 
     QUdpSocket *udpSocket;
     BYTE* bufPtr;
@@ -30,10 +27,9 @@ public:
     QByteArray datagram; //接收UDP的容器
     QHostAddress clientAddr; //客户端IP
     quint16 clientPort; //客户端port
-    shared_ptr<CirQueue<float>> CHdata; //存放Channel数据的容器
     shared_ptr<CirQueue<unsigned char>> CHdata2; //测试
      qint64 LenoUDP = 2000*60000;
-     bool readFlag;  //if has received readyRead signal
+     bool isDone;  //判断线程是否完成
 
 protected:
         //QThread的虚函数

@@ -3,7 +3,6 @@
 WriteToFiles::WriteToFiles(DealMsg* dealmsg)
 {
     dealMsg = dealmsg;
-
 }
 
 void WriteToFiles::run()
@@ -61,18 +60,3 @@ void WriteToFiles::run()
     qDebug()<<"-----------------------------------"<<endl;
 }
 
-void WriteToFiles::changeFileNameOnce()
-{
-
-
-}
-
-void WriteToFiles ::WriteToFilesWith3Channels()
-{
-
-}
-
-void WriteToFiles::closeStream()
-{
-
-}

@@ -6,7 +6,6 @@
 #include <QtNetwork>
 #include <recvdata.h>
 #include <QtDebug>
-#include <senddata.h>
 #include <windows.h>
 #include <dealmsg.h>
 #include <writetofiles.h>
@@ -36,9 +35,10 @@ public:
     DealMsg* dealMsg;
     WriteToFiles* writeToFiles;
     bool isStopSend;
+
+    void setLocalMsg();
     void OpenDealMsgThread();
     void OpenWriteToFilesThread();
-
     void stopThread();
 
 private slots:
