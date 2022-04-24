@@ -8,11 +8,21 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    isStart = false;
+
+    isASCII = false;
+
+    isHEX = false;
+
+    isSave = false;
+
+    CHdata2 = make_shared<CirQueue<unsigned char>>(LenoUDP);
+
      //Share space, link father object
     udpSocket = new QUdpSocket(this);
 
     //bind port
-    udpSocket->bind(8000);
+    udpSocket->bind(7000);
 
     //set Local Message
     setLocalMsg();
@@ -20,20 +30,13 @@ MainWindow::MainWindow(QWidget *parent)
     //Counting 60s
     udpTimer = new QTimer();
     udpTimer->setTimerType(Qt::PreciseTimer);//设置定时器对象精确度模式，分辨率为1ms
-    isTimeUpdate = false;
     udpTimer->start(60000);
 
-    //new DealMsg Thread
-    dealMsg  = new DealMsg(udpSocket);
-
     //new WriteToFiles Thread
-    writeToFiles = new WriteToFiles(dealMsg);
+    writeToFiles = new WriteToFiles(this);
 
     //Every Source send a packet, connect OpenDealMsgThread
     connect(udpSocket, &QUdpSocket::readyRead, this, &MainWindow::OpenDealMsgThread);
-
-    //Every time dealMsg is finished, connect dealMsgFinshedSlot()
-    connect(dealMsg,&QThread::finished,this,&MainWindow::FinishDealMsgThread);
 
     //Every 60s emit a timeout(), connect OpenWriteToFilesThread
     connect(udpTimer,&QTimer::timeout,this,&MainWindow::OpenWriteToFilesThread);
@@ -66,40 +69,117 @@ void MainWindow::setLocalMsg()
    ui->textEdit_Msg->insertPlainText("IpAddress: "+IpAddress.toString()+'\n');
 
    //设置窗口的标题
-   QString title = QString("Server IP: %1, Port: 8000").arg(IpAddress.toString());
+   QString title = QString("Server IP: %1, Port: 7000").arg(IpAddress.toString());
    setWindowTitle(title);
 }
 
 void MainWindow::OpenDealMsgThread()
 {
-    dealMsg->setFlag();
+    if(isStart){
 
-    //If dealMsg is Running, wait until it finished
-       if(dealMsg->isRunning())
-           dealMsg->wait();
+        while(udpSocket->hasPendingDatagrams()){
 
-    //run DealMsg Thread
-    dealMsg->start();
+            qDebug()<<"pending UDP datagram size = "<< udpSocket->pendingDatagramSize()<<endl;
 
-    ui->textEdit_Msg->insertPlainText("Pending...");
+            qDebug()<<"readDatagram ... "<<endl;
+
+            //clear datagram
+            datagram.clear();
+
+            //datagram init
+            datagram.resize(udpSocket->pendingDatagramSize());
+
+            //读取对方发送的内容，并存入datagram
+            lenoDatagram = udpSocket->readDatagram(datagram.data(),datagram.size(),&clientAddr,&clientPort);
+
+           //release bufPtr
+            delete bufPtr;
+            bufPtr = NULL;
+
+            isASCII = ui->checkBox_ASCII->isChecked();
+
+            isHEX = ui->checkBox_Hex->isChecked();
+
+           //ASCII接收
+           if(isASCII && (!isHEX)){
+
+               //define a new BYTE[]
+               bufPtr = new BYTE[lenoDatagram]();
+
+                //define a new RECORD_BUF
+               RECORD_BUF = make_shared<BYTE*>(bufPtr);
+
+               //RECORD_BUF << datagram
+               memcpy(*RECORD_BUF,datagram.data(),lenoDatagram);
+
+               //CHData << RECORD_BUF
+               qDebug()<<"CHData << RECORD_BUF "<<endl;
+
+               for(int i=0; i<lenoDatagram; i++) {
+
+                 unsigned char usCHDATA =(*RECORD_BUF)[i];
+
+                  CHdata2->push(usCHDATA);
+               }
+
+            }
+
+           //HEX接收
+           else if((!isASCII) && isHEX){
+
+               lenoDatagramHEX = lenoDatagram * 2;
+
+               //define a new BYTE[]
+               bufPtr = new BYTE[lenoDatagramHEX]();
+
+                //define a new RECORD_BUF
+               RECORD_BUF = make_shared<BYTE*>(bufPtr);
+
+               datagramHEX = datagram.toHex().toUpper();
+
+               memcpy(*RECORD_BUF,datagramHEX,lenoDatagramHEX);
+
+               //CHData << RECORD_BUF
+               qDebug()<<"CHData << RECORD_BUF "<<endl;
+
+               for(int i=0; i<lenoDatagramHEX; i++) {
+
+                 unsigned char usCHDATA =(*RECORD_BUF)[i];
+
+                  CHdata2->push(usCHDATA);
+
+               }//end for
+
+           } //end else if
+
+         else
+               break;
+
+         }//end while
+
+        ui->textEdit_Msg->insertPlainText("Pending...");
+
+    } //end if
+
 }
 
 void MainWindow::FinishDealMsgThread()
 {
-    //quit Thread
-    dealMsg->quit();
+//    //quit Thread
+//    dealMsg->quit();
 
-    dealMsg->wait();
+//    dealMsg->wait();
 
 }
 
 void MainWindow::OpenWriteToFilesThread()
 {
-//    //first quit dealMsg Thread
-//    dealMsg->resetFlag();
+  isSave = ui->checkBox_Save->isChecked();
 
-    //then writeToFiles->run()
-    writeToFiles->start();
+  if(isSave){
+      writeToFiles->start();
+  }
+
 }
 
 void MainWindow::FinishWriteToFilesThread()
@@ -111,20 +191,24 @@ void MainWindow::FinishWriteToFilesThread()
 
 }
 
-void MainWindow::on_pushButton_Send_clicked()
+void MainWindow::on_pushButton_Start_clicked()
 {
+    isStart = true;
 
+    ui->textEdit_Msg->insertPlainText(" Started ! ");
 }
+
+
 
 void MainWindow::on_pushButton_Stop_clicked()
 {
+    isStart = false;
 
+    ui->checkBox_ASCII->setChecked(isStart);
+    ui->checkBox_Hex->setChecked(isStart);
 
-}
+    isSave = false;
 
-void MainWindow::stopThread()
-{
-
-
+    ui->checkBox_Save->setChecked(isSave);
 }
 

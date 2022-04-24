@@ -1,8 +1,8 @@
 #include "writetofiles.h"
 
-WriteToFiles::WriteToFiles(DealMsg* dealmsg)
+WriteToFiles::WriteToFiles(MainWindow* mainwindow)
 {
-    dealMsg = dealmsg;
+    mainWindow = mainwindow;
 }
 
 void WriteToFiles::run()
@@ -32,24 +32,60 @@ void WriteToFiles::run()
     if (!outfile1.is_open() || !outfile2.is_open() || !outfile3.is_open()) return;
 
     //按先后顺序将CH1、CH2、CH3的数据分开存储
-    unsigned int sizeoCHdata2 = dealMsg->CHdata2->size();
 
-    for(unsigned int i=0; i<sizeoCHdata2/3; ++i)
-    {
-        outfile1.write((const char*)dealMsg->CHdata2->begin(),sizeof (unsigned char));
-        dealMsg->CHdata2->pop();
-        outfile2.write((const char*)dealMsg->CHdata2->begin(),sizeof (unsigned char));
-        dealMsg->CHdata2->pop();
-        outfile3.write((const char*)dealMsg->CHdata2->begin(),sizeof (unsigned char));
-        dealMsg->CHdata2->pop();
+
+    //ASCII码接收
+    if(mainWindow->isASCII && (!mainWindow->isHEX)){
+
+         unsigned int sizeoCHdata2 = mainWindow->CHdata2->size();
+
+        for(unsigned int i=0; i<sizeoCHdata2/3; ++i)
+        {
+            outfile1.write((const char*)mainWindow->CHdata2->begin(),sizeof (unsigned char));
+            mainWindow->CHdata2->pop();
+            outfile2.write((const char*)mainWindow->CHdata2->begin(),sizeof (unsigned char));
+            mainWindow->CHdata2->pop();
+            outfile3.write((const char*)mainWindow->CHdata2->begin(),sizeof (unsigned char));
+            mainWindow->CHdata2->pop();
+        }
+
+        //clear CHdata
+        mainWindow->CHdata2->clear();
+
+        qDebug()<<"ofstream writing over ! "<<endl;
+
+        qDebug()<<"CHdata have been cleared ! "<<endl;
+
     }
+        //HEX接收
+        else if((!mainWindow->isASCII) && mainWindow->isHEX){
 
-    //clear CHdata
-    dealMsg->CHdata2->clear();
+             unsigned int sizeoCHdata2 = mainWindow->CHdata2->size();
 
-    qDebug()<<"ofstream writing over ! "<<endl;
+            for(unsigned int i=0; i<sizeoCHdata2/3; ++i)
+            {
+                outfile1.write((const char*)mainWindow->CHdata2->begin(),sizeof (unsigned char));
+                mainWindow->CHdata2->pop();
+                outfile1.write((const char*)mainWindow->CHdata2->begin(),sizeof (unsigned char));
+                mainWindow->CHdata2->pop();
+                outfile2.write((const char*)mainWindow->CHdata2->begin(),sizeof (unsigned char));
+                mainWindow->CHdata2->pop();
+                outfile2.write((const char*)mainWindow->CHdata2->begin(),sizeof (unsigned char));
+                mainWindow->CHdata2->pop();
+                outfile3.write((const char*)mainWindow->CHdata2->begin(),sizeof (unsigned char));
+                mainWindow->CHdata2->pop();
+                outfile3.write((const char*)mainWindow->CHdata2->begin(),sizeof (unsigned char));
+                mainWindow->CHdata2->pop();
+            }
 
-    qDebug()<<"CHdata have been cleared ! "<<endl;
+            //clear CHdata
+            mainWindow->CHdata2->clear();
+
+            qDebug()<<"ofstream writing over ! "<<endl;
+
+            qDebug()<<"CHdata have been cleared ! "<<endl;
+
+    }
 
     //close stream
     outfile1.close();

@@ -69,6 +69,8 @@ void DealMsg::run()
         }
     }
 
+    this->quit();
+
     qDebug()<<"DealMsg Thread is Finished ! "<<endl;
     qDebug()<<"-----------------------------------"<<endl;
 

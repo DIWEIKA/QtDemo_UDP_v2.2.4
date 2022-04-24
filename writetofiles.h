@@ -14,10 +14,10 @@ class  WriteToFiles;
 class WriteToFiles : public QThread
 {
 public:
-    WriteToFiles(DealMsg* dealmsg);
+    WriteToFiles(MainWindow* mainwindow);
 
     QTimer* udpTimer;
-    DealMsg* dealMsg;
+    MainWindow* mainWindow;
     bool isTimeUpdate;
     QDateTime dateTime; //当前系统时间
     string saveFolder;//存储目录（文件夹）

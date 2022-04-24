@@ -13,14 +13,15 @@
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
 #include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QCheckBox>
+#include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QHeaderView>
-#include <QtWidgets/QLabel>
-#include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPlainTextEdit>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QStatusBar>
+#include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -29,13 +30,15 @@ class Ui_MainWindow
 {
 public:
     QWidget *centralwidget;
-    QLabel *label;
-    QLabel *label_2;
-    QLineEdit *lineEdit_Ip;
-    QLineEdit *lineEdit_Port;
-    QPushButton *pushButton_Send;
-    QPushButton *pushButton_Stop;
+    QWidget *widget;
+    QVBoxLayout *verticalLayout;
     QPlainTextEdit *textEdit_Msg;
+    QHBoxLayout *horizontalLayout;
+    QCheckBox *checkBox_ASCII;
+    QCheckBox *checkBox_Hex;
+    QCheckBox *checkBox_Save;
+    QPushButton *pushButton_Start;
+    QPushButton *pushButton_Stop;
     QMenuBar *menubar;
     QStatusBar *statusbar;
 
@@ -49,28 +52,47 @@ public:
         MainWindow->setFont(font);
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName(QStringLiteral("centralwidget"));
-        label = new QLabel(centralwidget);
-        label->setObjectName(QStringLiteral("label"));
-        label->setGeometry(QRect(90, 70, 191, 16));
-        label->setFont(font);
-        label_2 = new QLabel(centralwidget);
-        label_2->setObjectName(QStringLiteral("label_2"));
-        label_2->setGeometry(QRect(90, 110, 191, 16));
-        lineEdit_Ip = new QLineEdit(centralwidget);
-        lineEdit_Ip->setObjectName(QStringLiteral("lineEdit_Ip"));
-        lineEdit_Ip->setGeometry(QRect(250, 70, 221, 20));
-        lineEdit_Port = new QLineEdit(centralwidget);
-        lineEdit_Port->setObjectName(QStringLiteral("lineEdit_Port"));
-        lineEdit_Port->setGeometry(QRect(250, 110, 221, 20));
-        pushButton_Send = new QPushButton(centralwidget);
-        pushButton_Send->setObjectName(QStringLiteral("pushButton_Send"));
-        pushButton_Send->setGeometry(QRect(110, 430, 80, 31));
-        pushButton_Stop = new QPushButton(centralwidget);
-        pushButton_Stop->setObjectName(QStringLiteral("pushButton_Stop"));
-        pushButton_Stop->setGeometry(QRect(370, 430, 80, 31));
-        textEdit_Msg = new QPlainTextEdit(centralwidget);
+        widget = new QWidget(centralwidget);
+        widget->setObjectName(QStringLiteral("widget"));
+        widget->setGeometry(QRect(80, 30, 621, 501));
+        verticalLayout = new QVBoxLayout(widget);
+        verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
+        verticalLayout->setContentsMargins(0, 0, 0, 0);
+        textEdit_Msg = new QPlainTextEdit(widget);
         textEdit_Msg->setObjectName(QStringLiteral("textEdit_Msg"));
-        textEdit_Msg->setGeometry(QRect(90, 160, 381, 241));
+
+        verticalLayout->addWidget(textEdit_Msg);
+
+        horizontalLayout = new QHBoxLayout();
+        horizontalLayout->setObjectName(QStringLiteral("horizontalLayout"));
+        checkBox_ASCII = new QCheckBox(widget);
+        checkBox_ASCII->setObjectName(QStringLiteral("checkBox_ASCII"));
+
+        horizontalLayout->addWidget(checkBox_ASCII);
+
+        checkBox_Hex = new QCheckBox(widget);
+        checkBox_Hex->setObjectName(QStringLiteral("checkBox_Hex"));
+
+        horizontalLayout->addWidget(checkBox_Hex);
+
+        checkBox_Save = new QCheckBox(widget);
+        checkBox_Save->setObjectName(QStringLiteral("checkBox_Save"));
+
+        horizontalLayout->addWidget(checkBox_Save);
+
+
+        verticalLayout->addLayout(horizontalLayout);
+
+        pushButton_Start = new QPushButton(widget);
+        pushButton_Start->setObjectName(QStringLiteral("pushButton_Start"));
+
+        verticalLayout->addWidget(pushButton_Start);
+
+        pushButton_Stop = new QPushButton(widget);
+        pushButton_Stop->setObjectName(QStringLiteral("pushButton_Stop"));
+
+        verticalLayout->addWidget(pushButton_Stop);
+
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName(QStringLiteral("menubar"));
@@ -88,9 +110,10 @@ public:
     void retranslateUi(QMainWindow *MainWindow)
     {
         MainWindow->setWindowTitle(QApplication::translate("MainWindow", "MainWindow", Q_NULLPTR));
-        label->setText(QApplication::translate("MainWindow", "Destination IP", Q_NULLPTR));
-        label_2->setText(QApplication::translate("MainWindow", "Destination Port", Q_NULLPTR));
-        pushButton_Send->setText(QApplication::translate("MainWindow", "Send", Q_NULLPTR));
+        checkBox_ASCII->setText(QApplication::translate("MainWindow", "ASCII\346\216\245\346\224\266", Q_NULLPTR));
+        checkBox_Hex->setText(QApplication::translate("MainWindow", "HEX\346\216\245\346\224\266", Q_NULLPTR));
+        checkBox_Save->setText(QApplication::translate("MainWindow", "SaveToFiles", Q_NULLPTR));
+        pushButton_Start->setText(QApplication::translate("MainWindow", "Start", Q_NULLPTR));
         pushButton_Stop->setText(QApplication::translate("MainWindow", "Stop", Q_NULLPTR));
     } // retranslateUi
 
