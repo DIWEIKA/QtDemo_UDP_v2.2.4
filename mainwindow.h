@@ -9,6 +9,7 @@
 #include <windows.h>
 #include <dealmsg.h>
 #include <writetofiles.h>
+#include <vector>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -46,8 +47,9 @@ public:
     QByteArray datagramHEX;
     QHostAddress clientAddr; //客户端IP
     quint16 clientPort; //客户端port
-    shared_ptr<CirQueue<unsigned char>> CHdata2; //测试
-     qint64 LenoUDP = 8192*60000;
+    shared_ptr<CirQueue<unsigned char>> CHdata2;
+    shared_ptr<CirQueue<unsigned char>> CHdata3;
+    qint64 LenoUDP = 4096;
 
     void setLocalMsg();
     void OpenDealMsgThread();

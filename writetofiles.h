@@ -24,13 +24,20 @@ public:
     QString saveFilename1; //CH1存储文件名
     QString saveFilename2;
     QString saveFilename3;
+    QString saveFilename4;
+    QString saveFilenameAll;
     QString file1;
     QString file2;
     QString file3;
+    QString file4;
+    QString fileAll;
     ofstream outfile1;//CH1
     ofstream outfile2;
     ofstream outfile3;
+    ofstream outfile4;
+    ofstream outfileAll;
     int PeakNum=31;
+    shared_ptr<CirQueue<unsigned char>> CHdata;
 
 protected:
         //QThread的虚函数

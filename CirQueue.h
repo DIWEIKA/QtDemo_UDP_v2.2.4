@@ -1,4 +1,6 @@
-/* @Decription 通过数组实现线程安全循环队列 * */
+﻿/* @Decription 通过数组实现线程安全循环队列
+* 其本质上是一个T类型的数组 比如CHdata就是一个unsigned char类型的数组
+* */
 #pragma once
 #include<stdlib.h>
 #include<stdio.h>

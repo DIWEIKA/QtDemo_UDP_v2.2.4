@@ -17,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent)
     isSave = false;
 
     CHdata2 = make_shared<CirQueue<unsigned char>>(LenoUDP);
+    CHdata3 = make_shared<CirQueue<unsigned char>>(LenoUDP);
 
      //Share space, link father object
     udpSocket = new QUdpSocket(this);
@@ -27,10 +28,10 @@ MainWindow::MainWindow(QWidget *parent)
     //set Local Message
     setLocalMsg();
 
-    //Counting 60s
+    //Counting 1s
     udpTimer = new QTimer();
-    udpTimer->setTimerType(Qt::PreciseTimer);//设置定时器对象精确度模式，分辨率为1ms
-    udpTimer->start(60000);
+    udpTimer->setTimerType(Qt::PreciseTimer);
+    udpTimer->start(1000);
 
     //new WriteToFiles Thread
     writeToFiles = new WriteToFiles(this);
@@ -77,14 +78,16 @@ void MainWindow::OpenDealMsgThread()
 {
     if(isStart){
 
+        isASCII = ui->checkBox_ASCII->isChecked();
+
+        isHEX = ui->checkBox_Hex->isChecked();
+
         while(udpSocket->hasPendingDatagrams()){
 
             qDebug()<<"pending UDP datagram size = "<< udpSocket->pendingDatagramSize()<<endl;
 
             qDebug()<<"readDatagram ... "<<endl;
 
-            //clear datagram
-            datagram.clear();
 
             //datagram init
             datagram.resize(udpSocket->pendingDatagramSize());
@@ -96,9 +99,6 @@ void MainWindow::OpenDealMsgThread()
             delete bufPtr;
             bufPtr = NULL;
 
-            isASCII = ui->checkBox_ASCII->isChecked();
-
-            isHEX = ui->checkBox_Hex->isChecked();
 
            //ASCII接收
            if(isASCII && (!isHEX)){
@@ -112,14 +112,20 @@ void MainWindow::OpenDealMsgThread()
                //RECORD_BUF << datagram
                memcpy(*RECORD_BUF,datagram.data(),lenoDatagram);
 
-               //CHData << RECORD_BUF
-               qDebug()<<"CHData << RECORD_BUF "<<endl;
+               //clear datagram
+               datagram.clear();
 
+               //CHData << RECORD_BUF
                for(int i=0; i<lenoDatagram; i++) {
 
                  unsigned char usCHDATA =(*RECORD_BUF)[i];
 
-                  CHdata2->push(usCHDATA);
+                 //CHdata2满了，存入CHdata3
+                 if(CHdata2->isFull()){
+                    CHdata3->push(usCHDATA);
+                 }
+                 else
+                    CHdata2->push(usCHDATA);
                }
 
             }
@@ -135,18 +141,26 @@ void MainWindow::OpenDealMsgThread()
                 //define a new RECORD_BUF
                RECORD_BUF = make_shared<BYTE*>(bufPtr);
 
-               datagramHEX = datagram.toHex().toUpper();
+               datagramHEX = datagram.toHex().toUpper(); //.toHex().toUpper()
 
                memcpy(*RECORD_BUF,datagramHEX,lenoDatagramHEX);
 
-               //CHData << RECORD_BUF
-               qDebug()<<"CHData << RECORD_BUF "<<endl;
+               //clear datagram
+               datagram.clear();
 
+               //CHData << RECORD_BUF
                for(int i=0; i<lenoDatagramHEX; i++) {
 
                  unsigned char usCHDATA =(*RECORD_BUF)[i];
 
-                  CHdata2->push(usCHDATA);
+//                 qDebug()<<"usCHDATA = " << usCHDATA <<endl;
+
+                 //CHdata2满了，存入CHdata3
+                 if(CHdata2->isFull()){
+                    CHdata3->push(usCHDATA);
+                 }
+                 else
+                    CHdata2->push(usCHDATA);
 
                }//end for
 
@@ -155,9 +169,11 @@ void MainWindow::OpenDealMsgThread()
          else
                break;
 
+           break;
+
          }//end while
 
-        ui->textEdit_Msg->insertPlainText("Pending...");
+        ui->textEdit_Msg->insertPlainText(".");
 
     } //end if
 
@@ -176,7 +192,7 @@ void MainWindow::OpenWriteToFilesThread()
 {
   isSave = ui->checkBox_Save->isChecked();
 
-  if(isSave){
+  if(isSave && isStart){
       writeToFiles->start();
   }
 
