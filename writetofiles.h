@@ -6,18 +6,18 @@
 #include <QDebug>
 #include "ui_mainwindow.h"
 #include "mainwindow.h"
-#include"dealmsg.h"
 
 class DealMsg;
 class  WriteToFiles;
+class UDP_Recv;
 
 class WriteToFiles : public QThread
 {
 public:
-    WriteToFiles(MainWindow* mainwindow);
+    WriteToFiles(UDP_Recv* udp_Recv);
 
     QTimer* udpTimer;
-    MainWindow* mainWindow;
+    UDP_Recv* udp_recv;
     bool isTimeUpdate;
     QDateTime dateTime; //当前系统时间
     string saveFolder;//存储目录（文件夹）
@@ -40,9 +40,9 @@ public:
     shared_ptr<CirQueue<unsigned char>> CHdata;
 
 protected:
-        //QThread的虚函数
-        //线程处理函数
-        //不能直接调用，通过start()间接调用
+    //QThread的虚函数
+    //线程处理函数
+    //不能直接调用，通过start()间接调用
     void run();
 
 signals:
